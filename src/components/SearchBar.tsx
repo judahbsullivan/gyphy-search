@@ -1,26 +1,40 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SearchBar() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [query, setQuery] = useState(searchParams.get('q') || '');
+    const isUserTyping = useRef(false);
 
     useEffect(() => {
+        if (!isUserTyping.current) return;
+
         const timer = setTimeout(() => {
-            const params = new URLSearchParams(searchParams);
-            if (query) params.set('q', query), params.set('page', '1');
-            else params.delete('q'), params.delete('page');
+            const params = new URLSearchParams();
+            if (query) {
+                params.set('q', query);
+                params.set('page', '1');
+            }
             router.push(`?${params}`);
-        }, 500);
+            isUserTyping.current = false;
+        }, 400);
+
         return () => clearTimeout(timer);
-    }, [query, router, searchParams]);
+    }, [query, router]);
 
     useEffect(() => {
-        setQuery(searchParams.get('q') || '');
+        if (!isUserTyping.current) {
+            setQuery(searchParams.get('q') || '');
+        }
     }, [searchParams]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        isUserTyping.current = true;
+        setQuery(e.target.value);
+    };
 
     return (
         <div className="search-container">
@@ -28,7 +42,7 @@ export default function SearchBar() {
                 type="text"
                 placeholder="Search GIFs..."
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={handleChange}
                 className="search-input"
                 aria-label="Search GIFs"
             />
