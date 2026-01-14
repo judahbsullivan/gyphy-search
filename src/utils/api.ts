@@ -29,7 +29,7 @@ async function request<T>(path: string, params: Record<string, string | number> 
 
 export async function fetchGifs(query: string, offset = 0, limit = 20): Promise<GiphyResponse> {
   const endpoint = query ? '/search' : '/trending';
-  const params = { limit, offset, ...(query ? { q: query } : {}) };
+  const params = { limit, offset, rating: 'pg-13', ...(query ? { q: query } : {}) };
   return request<GiphyResponse>(endpoint, params, { next: { revalidate: 3600 } });
 }
 
